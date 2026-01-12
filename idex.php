@@ -1,4 +1,47 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'phpmailer/src/Exception.php';
+require 'phpmailer/src/PHPMailer.php';
+require 'phpmailer/src/SMTP.php';
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+    $name = $_POST["name"] ?? '';
+    $email = $_POST["email"] ?? '';
+    $message = $_POST["message"] ?? '';
+
+    $mail = new PHPMailer(true);
+
+    try {
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = 'tobiasveverka@gmail.com'; // 👈 tvůj Gmail
+        $mail->Password = '6969';            // 👈 viz níže
+        $mail->SMTPSecure = 'tls';
+        $mail->Port = 587;
+
+        $mail->setFrom($email, $name);
+        $mail->addAddress('tobiasveverka@gmail.com');
+
+        $mail->isHTML(false);
+        $mail->Subject = 'Nová zpráva z portfolia';
+        $mail->Body = "Jméno: $name\nEmail: $email\n\n$message";
+
+        $mail->send();
+
+        echo "<p style='color:#64ffda;text-align:center;'>Email odeslán ✔</p>";
+
+    } catch (Exception $e) {
+        echo "<p style='color:red;text-align:center;'>Chyba: {$mail->ErrorInfo}</p>";
+    }
+}
+?>
+
+
+<?php
 // --- DATA (Zde si jednoduše upravíš obsah) ---
 $name = "Jan Novák";
 $role = "Backend & Web Developer";
@@ -45,6 +88,7 @@ $projects = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IT Portfolio - <?php echo $name; ?></title>
     <link rel="stylesheet" href="/style/style.css">
+    <script src="/script/script.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -59,9 +103,12 @@ $projects = [
             <li><a href="#projects"><span class="code-num">03.</span> Projekty</a></li>
             <li><a href="#contact"><span class="code-num">04.</span> Kontakt</a></li>
         </ul>
-        <div class="hamburger">
-            <i class="fas fa-bars"></i>
-        </div>
+    <div class="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
     </nav>
 
     <section id="home" class="hero">
@@ -101,7 +148,7 @@ $projects = [
 
             <div class="about-img scroll-reveal">
                 <div class="img-wrapper">
-                    <img src="https://via.placeholder.com/300" alt="Moje fotka">
+                    <img src="/img/144317661.jpg" alt="Moje fotka">
                     <div class="img-border"></div>
                 </div>
             </div>
@@ -138,13 +185,39 @@ $projects = [
         </div>
     </section>
 
-    <section id="contact" class="container section-padding text-center scroll-reveal">
+<section id="contact" class="container section-padding text-center">
         <span class="subtitle code-num">04. Co dál?</span>
-        <h2 class="big-title">Kontaktujte mě</h2>
+        <h2 class="big-title">Napište mi</h2>
         <p class="contact-text">
-            Momentálně hledám nové příležitosti a stáže. Ať už máte dotaz nebo mě chcete jen pozdravit, moje schránka je otevřená!
+            Máte dotaz nebo nabídku spolupráce? Vyplňte formulář níže.
         </p>
-        <a href="mailto:<?php echo $email; ?>" class="btn big-btn">Napsat Email</a>
+
+        <?php if ($zprava_odeslana): ?>
+            <div class="alert alert-success">
+                Děkuji! Vaše zpráva byla úspěšně odeslána. Brzy se ozvu.
+            </div>
+        <?php elseif (!empty($chyba)): ?>
+            <div class="alert alert-error">
+                <?php echo $chyba; ?>
+            </div>
+        <?php endif; ?>
+        <form class="contact-form" method="POST" action="">
+            <div class="form-group">
+                <input type="text" name="name" placeholder="Jméno" required>
+            </div>
+            <div class="form-group">
+                <input type="email" name="email" placeholder="Email" required>
+            </div>
+            <div class="form-group">
+                <textarea name="message" rows="5" placeholder="Vaše zpráva..." required></textarea>
+            </div>
+            <button type="submit" class="btn big-btn">Odeslat zprávu</button>
+        </form>
+
+        <div class="social-links">
+            <a href="#"><i class="fab fa-github"></i></a>
+            <a href="#"><i class="fab fa-linkedin"></i></a>
+        </div>
     </section>
 
     <footer>
